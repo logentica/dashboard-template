@@ -25,16 +25,21 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Check for yq
-if ! command -v yq &> /dev/null; then
-    echo "Error: yq is required but not installed"
-    exit 1
-fi
-
 # Extract configuration from values.yaml
-IMAGE_REPO=$(yq '.image.repository' values.yaml)
-CURRENT_TAG=$(yq '.image.tag' values.yaml)
-SITE_NAME=$(yq '.site.name' values.yaml)
+# Prefer yq, fall back to python (PyYAML) for portability.
+if command -v yq &> /dev/null; then
+  IMAGE_REPO=$(yq '.image.repository' values.yaml)
+  CURRENT_TAG=$(yq '.image.tag' values.yaml)
+  SITE_NAME=$(yq '.site.name' values.yaml)
+else
+  read -r IMAGE_REPO CURRENT_TAG SITE_NAME < <(python3 - <<'PY'
+import yaml
+with open('values.yaml','r') as f:
+    v=yaml.safe_load(f)
+print(v['image']['repository'], v['image']['tag'], v.get('site',{}).get('name',''))
+PY
+  )
+fi
 
 # Increment tag
 NEW_TAG=$((CURRENT_TAG + 1))
@@ -75,7 +80,19 @@ docker push "$IMAGE"
 # Update values.yaml
 echo ""
 echo "Step 4: Updating values.yaml..."
-yq -i ".image.tag = \"$NEW_TAG\"" values.yaml
+if command -v yq &> /dev/null; then
+  yq -i ".image.tag = \"$NEW_TAG\"" values.yaml
+else
+  python3 - <<PY
+import yaml
+p='values.yaml'
+with open(p,'r') as f:
+    v=yaml.safe_load(f)
+v['image']['tag']=str(${NEW_TAG})
+with open(p,'w') as f:
+    yaml.safe_dump(v,f,sort_keys=False)
+PY
+fi
 
 echo ""
 echo "================================================"
