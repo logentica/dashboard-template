@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-# Simple Template - Container Build and Push Script
+# Dashboard Template - Container Build and Push Script
 # Usage: ./push.sh [--dry-run]
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -41,7 +41,7 @@ NEW_TAG=$((CURRENT_TAG + 1))
 IMAGE="${IMAGE_REPO}:${NEW_TAG}"
 
 echo "================================================"
-echo "Simple Template - Build & Push"
+echo "Dashboard Template - Build & Push"
 echo "================================================"
 echo "Site:     $SITE_NAME"
 echo "Image:    $IMAGE"
