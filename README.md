@@ -1,6 +1,6 @@
-# Simple Template
+# Dashboard Template
 
-A lightweight website template for the Buildville platform. Perfect for static sites, blogs, portfolios, landing pages, and web games that don't need user authentication or databases.
+A lightweight public dashboard demo template for the Buildville platform. Perfect for static sites, blogs, landing pages, and product tours that don't need user authentication or databases.
 
 ## Quick Start
 
@@ -31,7 +31,7 @@ Need these? Use [opensaas-template](../opensaas-template) instead.
 ## Project Structure
 
 ```
-simple-template/
+dashboard-template/
 ├── values.yaml           # Deployment config (update this!)
 ├── agents.yaml           # AI agent config (optional)
 ├── deploy.sh             # One-click deploy script

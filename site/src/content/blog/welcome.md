@@ -1,10 +1,10 @@
 ---
-title: 'Welcome to Simple Site'
+title: 'Welcome to Dashboard Template'
 description: 'Getting started with your new Astro-based website template.'
 pubDate: 2026-02-06
 ---
 
-Welcome to your new website! This is a sample blog post to demonstrate how content works in the Simple Site template.
+Welcome to your new dashboard demo site! This is a sample blog post to demonstrate how content works in the Dashboard Template.
 
 ## Writing Content
 

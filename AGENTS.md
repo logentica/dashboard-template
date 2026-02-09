@@ -30,7 +30,7 @@ It's a single nginx container serving static HTML, CSS, and JavaScript.
 ## Project Structure
 
 ```
-simple-template/
+dashboard-template/
 ├── values.yaml           # Deployment configuration
 ├── agents.yaml           # AI agent settings
 ├── deploy.sh             # One-click deployment

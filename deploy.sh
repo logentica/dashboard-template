@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-# Simple Template - One-Click Deployment Script
+# Dashboard Template - One-Click Deployment Script
 # Usage: ./deploy.sh
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -37,7 +37,7 @@ NAMESPACE=$(yq '.namespace' values.yaml)
 HOSTNAME=$(yq '.ingress.hosts[0].host' values.yaml)
 
 echo "================================================"
-echo "Simple Template - Deploy"
+echo "Dashboard Template - Deploy"
 echo "================================================"
 echo "Site:      $SITE_NAME"
 echo "Namespace: $NAMESPACE"
