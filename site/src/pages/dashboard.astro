@@ -26,12 +26,11 @@
             <div class="h-9 w-9 rounded-xl border border-white/10 bg-white/5"></div>
             <div>
               <div class="text-xs uppercase tracking-widest text-zinc-400">Public demo · no auth · template-ready</div>
-              <h1 class="mt-1 text-3xl font-semibold tracking-tight">Creator Community Growth</h1>
+              <h1 class="mt-1 text-3xl font-semibold tracking-tight">Signals Performance Terminal</h1>
             </div>
           </div>
           <p class="mt-4 max-w-2xl text-sm text-zinc-300">
-            This is a niche dashboard people actually want: it answers “what content drives signups?”, “who converts?”,
-            and “are we retaining paid members?” — with drilldowns you can act on.
+            A member-facing tool for a token community: it answers “which signals are working?”, “in what regimes?”, and “what changed this week?” — with drilldowns and exports you can act on.
           </p>
         </div>
 
@@ -72,34 +71,34 @@
       <section class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <div class="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-5">
           <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-          <div class="text-xs uppercase tracking-wider text-zinc-400">Active members</div>
-          <div class="mt-2 text-2xl font-semibold tracking-tight" data-kpi="active_members">—</div>
-          <div class="mt-1 text-sm text-emerald-300" data-kpi-delta="active_members">—</div>
-          <svg class="mt-3" width="104" height="28" viewBox="0 0 104 28" data-spark="active_members"></svg>
+          <div class="text-xs uppercase tracking-wider text-zinc-400">Equity (paper)</div>
+          <div class="mt-2 text-2xl font-semibold tracking-tight" data-kpi="equity">—</div>
+          <div class="mt-1 text-sm text-emerald-300" data-kpi-delta="equity">—</div>
+          <svg class="mt-3" width="104" height="28" viewBox="0 0 104 28" data-spark="equity"></svg>
         </div>
 
         <div class="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-5">
           <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-          <div class="text-xs uppercase tracking-wider text-zinc-400">Weekly retention</div>
-          <div class="mt-2 text-2xl font-semibold tracking-tight" data-kpi="weekly_retention">—</div>
-          <div class="mt-1 text-sm text-emerald-300" data-kpi-delta="weekly_retention">—</div>
-          <svg class="mt-3" width="104" height="28" viewBox="0 0 104 28" data-spark="weekly_retention"></svg>
+          <div class="text-xs uppercase tracking-wider text-zinc-400">Max drawdown</div>
+          <div class="mt-2 text-2xl font-semibold tracking-tight" data-kpi="max_drawdown">—</div>
+          <div class="mt-1 text-sm text-emerald-300" data-kpi-delta="max_drawdown">—</div>
+          <svg class="mt-3" width="104" height="28" viewBox="0 0 104 28" data-spark="drawdown"></svg>
         </div>
 
         <div class="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-5">
           <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-          <div class="text-xs uppercase tracking-wider text-zinc-400">Conversions</div>
-          <div class="mt-2 text-2xl font-semibold tracking-tight" data-kpi="conversions">—</div>
-          <div class="mt-1 text-sm text-emerald-300" data-kpi-delta="conversions">—</div>
-          <svg class="mt-3" width="104" height="28" viewBox="0 0 104 28" data-spark="conversions"></svg>
+          <div class="text-xs uppercase tracking-wider text-zinc-400">Win rate</div>
+          <div class="mt-2 text-2xl font-semibold tracking-tight" data-kpi="win_rate">—</div>
+          <div class="mt-1 text-sm text-emerald-300" data-kpi-delta="win_rate">—</div>
+          <svg class="mt-3" width="104" height="28" viewBox="0 0 104 28" data-spark="win_rate"></svg>
         </div>
 
         <div class="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-5">
           <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-          <div class="text-xs uppercase tracking-wider text-zinc-400">MRR</div>
-          <div class="mt-2 text-2xl font-semibold tracking-tight" data-kpi="mrr">—</div>
-          <div class="mt-1 text-sm text-emerald-300" data-kpi-delta="mrr">—</div>
-          <svg class="mt-3" width="104" height="28" viewBox="0 0 104 28" data-spark="mrr"></svg>
+          <div class="text-xs uppercase tracking-wider text-zinc-400">Profit factor</div>
+          <div class="mt-2 text-2xl font-semibold tracking-tight" data-kpi="profit_factor">—</div>
+          <div class="mt-1 text-sm text-emerald-300" data-kpi-delta="profit_factor">—</div>
+          <svg class="mt-3" width="104" height="28" viewBox="0 0 104 28" data-spark="equity"></svg>
         </div>
       </section>
 
@@ -108,9 +107,9 @@
         <div class="rounded-2xl border border-white/10 bg-white/5 p-6 lg:col-span-2">
           <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <h2 class="text-lg font-semibold tracking-tight">Engagement → Signups → Activation</h2>
+              <h2 class="text-lg font-semibold tracking-tight">Equity + Drawdown + Context</h2>
               <p class="mt-1 text-sm text-zinc-400">
-                Hover to see values. Toggle series. This is the core story: content drives engagement, engagement drives signups.
+                Hover to see values. Toggle series. This is the core story: strategies drive expectancy, expectancy drives equity — and drawdown tells you the cost.
               </p>
             </div>
 
@@ -193,7 +192,7 @@
                 <th class="px-4 py-3 text-right font-medium text-zinc-400" data-sort="followers">Followers</th>
                 <th class="px-4 py-3 text-right font-medium text-zinc-400" data-sort="posts">Posts</th>
                 <th class="px-4 py-3 text-right font-medium text-zinc-400" data-sort="engagement">Engagement</th>
-                <th class="px-4 py-3 text-right font-medium text-zinc-400" data-sort="converts">Conversions</th>
+                <th class="px-4 py-3 text-right font-medium text-zinc-400" data-sort="converts">Win rate</th>
               </tr>
             </thead>
             <tbody class="divide-y divide-white/10" id="top-body"></tbody>
@@ -497,7 +496,7 @@
         }
 
         async function init() {
-          const res = await fetch('/demo/community_growth.json');
+          const res = await fetch('/demo/token_terminal.json');
           state.data = await res.json();
 
           els.range.addEventListener('change', () => {
