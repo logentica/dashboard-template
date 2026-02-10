@@ -1,6 +1,5 @@
 ---
-// Example: Creator/Community growth dashboard (interactive, no backend).
-// All data is static JSON and computed client-side.
+// Public no-auth demo dashboard. Data is demo-generated client-side.
 ---
 
 <html lang="en">
@@ -25,13 +24,13 @@
           <div class="flex items-center gap-3">
             <div class="h-9 w-9 rounded-xl border border-white/10 bg-white/5"></div>
             <div>
-              <div class="text-xs uppercase tracking-widest text-zinc-400">Public demo · no auth · template-ready</div>
-              <h1 class="mt-1 text-3xl font-semibold tracking-tight">Signals Performance Terminal</h1>
+              <h1 class="mt-1 text-3xl font-semibold tracking-tight" id="title">Signals Performance Terminal</h1>
+              <div class="mt-2 flex items-center gap-2">
+                <div class="text-xs text-zinc-400" id="subtitle">—</div>
+                <span class="text-xs text-emerald-300 hidden" id="livePill">LIVE</span>
+              </div>
             </div>
           </div>
-          <p class="mt-4 max-w-2xl text-sm text-zinc-300">
-            A member-facing tool for a token community: it answers “which signals are working?”, “in what regimes?”, and “what changed this week?” — with drilldowns and exports you can act on.
-          </p>
         </div>
 
         <div class="flex flex-wrap items-center gap-2 sm:justify-end">
@@ -48,13 +47,18 @@
           </div>
 
           <div class="rounded-xl border border-white/10 bg-white/5 px-3 py-2">
-            <div class="text-[11px] text-zinc-400">Segment</div>
-            <select id="segment" class="mt-1 w-full bg-transparent text-sm font-medium outline-none" aria-label="Segment">
-              <option value="all" selected>All</option>
-              <option value="free">Free</option>
-              <option value="paid">Paid</option>
-            </select>
+            <div class="text-[11px] text-zinc-400">Token</div>
+            <select id="token" class="mt-1 w-full bg-transparent text-sm font-medium outline-none" aria-label="Token"></select>
           </div>
+
+          <button
+            id="toggleLive"
+            class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-zinc-200 hover:bg-white/10"
+            aria-pressed="true"
+            title="Pause/resume live demo updates"
+          >
+            Live
+          </button>
 
           <button
             id="export"
@@ -114,10 +118,12 @@
             </div>
 
             <div class="flex flex-wrap items-center gap-2">
-              <button class="series-toggle rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-xs text-zinc-300" data-series="engagement" aria-pressed="true">Engagement</button>
-              <button class="series-toggle rounded-lg border border-white/10 bg-transparent px-2 py-1 text-xs text-zinc-500" data-series="signup" aria-pressed="true">Signups</button>
-              <button class="series-toggle rounded-lg border border-white/10 bg-transparent px-2 py-1 text-xs text-zinc-500" data-series="activation" aria-pressed="true">Activation</button>
-              <button class="series-toggle rounded-lg border border-white/10 bg-transparent px-2 py-1 text-xs text-zinc-500" data-series="churn" aria-pressed="true">Churn risk</button>
+              <button class="series-toggle rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-xs text-zinc-300" data-series="equity" aria-pressed="true">Equity</button>
+              <button class="series-toggle rounded-lg border border-white/10 bg-transparent px-2 py-1 text-xs text-zinc-500" data-series="drawdown" aria-pressed="true">Drawdown</button>
+              <button class="series-toggle rounded-lg border border-white/10 bg-transparent px-2 py-1 text-xs text-zinc-500" data-series="price" aria-pressed="true">Price</button>
+              <button class="series-toggle rounded-lg border border-white/10 bg-transparent px-2 py-1 text-xs text-zinc-500" data-series="volume" aria-pressed="true">Volume</button>
+              <button class="series-toggle rounded-lg border border-white/10 bg-transparent px-2 py-1 text-xs text-zinc-500" data-series="oi" aria-pressed="true">Open interest</button>
+              <button class="series-toggle rounded-lg border border-white/10 bg-transparent px-2 py-1 text-xs text-zinc-500" data-series="win_rate" aria-pressed="true">Win rate</button>
             </div>
           </div>
 
@@ -408,10 +414,12 @@
             const rows = [];
             const add = (label, value) => rows.push(`<div class="flex items-center justify-between gap-6"><span class="text-zinc-400">${label}</span><span class="font-medium">${value}</span></div>`);
 
-            if (vis.engagement) add('Engagement', fmt.int(rangeData.engagement[i]));
-            if (vis.signup) add('Signups', fmt.int(rangeData.signup[i]));
-            if (vis.activation) add('Activation', fmt.int(rangeData.activation[i]));
-            if (vis.churn) add('Churn risk', fmt.pct(rangeData.churn[i]));
+            if (vis.equity) add('Equity', fmt.money(rangeData.series.equity[i]));
+            if (vis.drawdown) add('Drawdown', `${rangeData.series.drawdown[i].toFixed(0)} USD`);
+            if (vis.price) add('Price', `$${rangeData.series.price[i].toFixed(3)}`);
+            if (vis.volume) add('Volume', `${rangeData.series.volume[i].toFixed(1)}M`);
+            if (vis.oi) add('Open interest', `${Math.round(rangeData.series.oi[i])}`);
+            if (vis.win_rate) add('Win rate', fmt.pct(rangeData.series.win_rate[i]));
             els.tipBody.innerHTML = rows.join('');
           });
 
@@ -446,66 +454,197 @@
 
         function exportCSV(data, rangeKey) {
           const r = data.ranges[rangeKey];
-          const cols = ['label', ...r.dates];
+          const cols = ['metric', ...r.labels];
           const lines = [];
           lines.push(cols.join(','));
           const addRow = (label, arr) => lines.push([label, ...arr].join(','));
-          addRow('engagement', r.engagement);
-          addRow('signup', r.signup);
-          addRow('activation', r.activation);
-          addRow('churn', r.churn);
+
+          const s = r.series;
+          const order = ['equity', 'drawdown', 'price', 'volume', 'oi', 'win_rate'];
+          order.forEach((k) => addRow(k, s[k].map((v) => (typeof v === 'number' ? v : String(v)))));
 
           const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8' });
           const url = URL.createObjectURL(blob);
           const a = document.createElement('a');
           a.href = url;
-          a.download = `dashboard-${rangeKey}.csv`;
+          a.download = `terminal-${data.meta.primary_token.symbol}-${rangeKey}.csv`;
           document.body.appendChild(a);
           a.click();
           a.remove();
           URL.revokeObjectURL(url);
         }
 
-        function segmentMultiplier(seg) {
-          if (seg === 'free') return { active: 0.78, conv: 0.62, mrr: 0.28, retention: 0.86, churn: 1.10 };
-          if (seg === 'paid') return { active: 0.22, conv: 0.38, mrr: 0.72, retention: 1.18, churn: 0.72 };
-          return { active: 1, conv: 1, mrr: 1, retention: 1, churn: 1 };
-        }
-
         function render() {
           if (!state.data) return;
           const data = state.data;
-          const m = segmentMultiplier(state.segment);
+          const r = data.ranges[state.range];
 
-          const base = data.kpis;
-          // Sparklines are synthetic but consistent.
-          setKPI('active_members', base.active_members.value * m.active, base.active_members.delta, [12, 13, 12, 14, 15, 16, 18], fmt.int);
-          setKPI('weekly_retention', base.weekly_retention.value * m.retention, base.weekly_retention.delta, [32, 33, 34, 35, 37, 39, 41], (v) => `${Math.round(v)}%`);
-          setKPI('conversions', base.conversions.value * m.conv, base.conversions.delta, [10, 12, 11, 14, 15, 16, 18], fmt.int);
-          setKPI('mrr', base.mrr.value * m.mrr, base.mrr.delta, [6200, 6400, 6600, 6900, 7200, 7600, 7940], fmt.money);
+          // Title/subtitle
+          els.title.textContent = data.meta.title;
+          els.subtitle.textContent = `${data.meta.brand} · $${data.meta.primary_token.symbol} (${data.meta.primary_token.chain})`;
 
-          const rangeData = {
-            ...data.ranges[state.range],
-            label: data.ranges[state.range].label,
-            churn: data.ranges[state.range].churn.map((x) => x * m.churn),
-          };
+          // KPIs
+          setKPI('equity', r.kpis.equity.value, r.kpis.equity.delta, r.series.equity.slice(-7), fmt.money);
+          setKPI(
+            'max_drawdown',
+            parseFloat(String(r.kpis.max_drawdown.value).replace('%', '')),
+            r.kpis.max_drawdown.delta,
+            r.series.drawdown.slice(-7).map((x) => Math.abs(x)),
+            (v) => `${v.toFixed(2)}%`
+          );
+          setKPI('win_rate', parseFloat(String(r.kpis.win_rate.value).replace('%', '')), r.kpis.win_rate.delta, r.series.win_rate.slice(-7).map((x) => x * 100), (v) => `${Math.round(v)}%`);
+          setKPI('profit_factor', r.kpis.profit_factor.value, r.kpis.profit_factor.delta, r.series.equity.slice(-7), (v) => Number(v).toFixed(2));
 
-          drawChart(rangeData);
-          drawCohorts(data.cohorts);
+          // Chart + table
+          drawChart({
+            label: r.label,
+            labels: r.labels,
+            series: r.series,
+          });
+
           renderTopTable(data.top_creators);
         }
 
-        async function init() {
-          const res = await fetch('/demo/token_terminal.json');
-          state.data = await res.json();
+        // --- Thin adapter layer ---
+        // DemoAdapter: loads a static snapshot then mutates it every few seconds to simulate live data.
+        // RealAdapter: placeholder; later swap in calls to a real backend (trades/signals/venues).
+        class DemoAdapter {
+          constructor(url) {
+            this.url = url;
+          }
 
-          els.range.addEventListener('change', () => {
-            state.range = els.range.value;
+          async loadSnapshot() {
+            const res = await fetch(this.url, { cache: 'no-store' });
+            const snap = await res.json();
+
+            // Normalize ranges for the UI.
+            for (const k of Object.keys(snap.ranges)) {
+              const r = snap.ranges[k];
+              // derive labels from start/end (simple) if not present
+              if (!r.labels) {
+                const n = r.series.equity.length;
+                r.labels = Array.from({ length: n }, (_, i) => (n <= 7 ? ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'][i] || `D${i+1}` : `D${i+1}`));
+              }
+            }
+
+            // Inject fictional influencer dataset (token callers)
+            snap.top_creators = this._makeInfluencers(snap.meta.primary_token.symbol);
+
+            return snap;
+          }
+
+          _makeInfluencers(sym) {
+            const names = [
+              'MoonPilot',
+              'SolNomad',
+              'CipherQuant',
+              'OrbitHedge',
+              'ArcLight',
+              'DeltaSage',
+              'NebulaTrades',
+              'KiteSignal',
+            ];
+            return names.map((n) => {
+              const followers = Math.floor(18_000 + Math.random() * 420_000);
+              const posts = Math.floor(6 + Math.random() * 60);
+              const engagement = 1.2 + Math.random() * 6.5;
+              const converts = Math.floor(20 + Math.random() * 900);
+              return { name: `${n} (${sym})`, followers, posts, engagement, converts };
+            });
+          }
+
+          // mutate state in place
+          tick(data, rangeKey) {
+            const r = data.ranges[rangeKey];
+            const s = r.series;
+
+            // random walk helpers
+            const jitter = (v, pct) => v * (1 + (Math.random() - 0.5) * pct);
+
+            const lastEq = s.equity[s.equity.length - 1];
+            const nextEq = jitter(lastEq, 0.02);
+            s.equity.push(nextEq);
+            s.equity.shift();
+
+            const lastPrice = s.price[s.price.length - 1];
+            const nextPrice = Math.max(0.001, jitter(lastPrice, 0.06));
+            s.price.push(nextPrice);
+            s.price.shift();
+
+            const lastVol = s.volume[s.volume.length - 1];
+            const nextVol = Math.max(1, jitter(lastVol, 0.18));
+            s.volume.push(nextVol);
+            s.volume.shift();
+
+            const lastOI = s.oi[s.oi.length - 1];
+            const nextOI = Math.max(1, jitter(lastOI, 0.08));
+            s.oi.push(nextOI);
+            s.oi.shift();
+
+            const lastWR = s.win_rate[s.win_rate.length - 1];
+            const nextWR = Math.max(0.35, Math.min(0.75, jitter(lastWR, 0.06)));
+            s.win_rate.push(nextWR);
+            s.win_rate.shift();
+
+            // drawdown: keep it negative-ish and responsive
+            const dd = Math.min(0, (nextEq - Math.max(...s.equity)));
+            s.drawdown.push(dd);
+            s.drawdown.shift();
+
+            // KPIs update
+            r.kpis.equity.value = Math.round(nextEq);
+            r.kpis.equity.delta = `${(100 * (nextEq / s.equity[0] - 1)).toFixed(1)}%`;
+
+            const ddPct = Math.abs(Math.min(...s.drawdown)) / Math.max(...s.equity) * 100;
+            r.kpis.max_drawdown.value = `${ddPct.toFixed(2)}%`;
+            r.kpis.max_drawdown.delta = `${(ddPct - parseFloat(String(r.kpis.max_drawdown.value).replace('%',''))).toFixed(2)}%`;
+
+            r.kpis.win_rate.value = `${Math.round(nextWR * 100)}%`;
+            r.kpis.win_rate.delta = `${Math.round((nextWR - 0.5) * 100)}%`;
+
+            const pf = 1.05 + Math.random() * 0.9;
+            r.kpis.profit_factor.value = Number(pf.toFixed(2));
+            r.kpis.profit_factor.delta = `${(Math.random() > 0.5 ? '+' : '-')}${(Math.random() * 0.12).toFixed(2)}`;
+
+            // influencer table: small random movement
+            data.top_creators.forEach((x) => {
+              x.engagement = Math.max(0.4, x.engagement + (Math.random() - 0.5) * 0.35);
+              x.converts = Math.max(0, x.converts + Math.floor((Math.random() - 0.45) * 25));
+            });
+          }
+        }
+
+        class RealAdapter {
+          // placeholder: later wire to /api/... or a hosted endpoint
+          async loadSnapshot() {
+            throw new Error('RealAdapter not configured');
+          }
+        }
+
+        async function init() {
+          // Load a snapshot (demo)
+          const adapter = new DemoAdapter('/demo/token_terminal.json');
+          state.data = await adapter.loadSnapshot();
+
+          // Fictitious coin swap (demo safety)
+          state.data.meta.primary_token = { symbol: 'AURX', name: 'AuroraX', chain: 'Solana' };
+          state.data.meta.brand = 'Kestrel Labs';
+          state.data.meta.title = 'Signals Performance Terminal';
+
+          // Token selector (universe)
+          els.token.innerHTML = state.data.meta.token_universe
+            .map((t) => `<option value="${t.symbol}">${t.symbol} · ${t.name}</option>`)
+            .join('');
+          els.token.value = state.data.meta.primary_token.symbol;
+          els.token.addEventListener('change', () => {
+            state.data.meta.primary_token.symbol = els.token.value;
+            // Refresh influencer labels to match selected token
+            state.data.top_creators = adapter._makeInfluencers(els.token.value);
             render();
           });
 
-          els.segment.addEventListener('change', () => {
-            state.segment = els.segment.value;
+          els.range.addEventListener('change', () => {
+            state.range = els.range.value;
             render();
           });
 
@@ -538,6 +677,35 @@
 
           els.export.addEventListener('click', () => exportCSV(state.data, state.range));
 
+          // Live updates
+          state.live = true;
+          els.livePill.classList.remove('hidden');
+
+          const tickEveryMs = 2400;
+          let timer = null;
+          const start = () => {
+            if (timer) return;
+            timer = setInterval(() => {
+              if (!state.data || !state.live) return;
+              adapter.tick(state.data, state.range);
+              render();
+            }, tickEveryMs);
+          };
+          const stop = () => {
+            if (!timer) return;
+            clearInterval(timer);
+            timer = null;
+          };
+
+          els.toggleLive.addEventListener('click', () => {
+            state.live = !state.live;
+            els.toggleLive.setAttribute('aria-pressed', String(state.live));
+            els.livePill.classList.toggle('hidden', !state.live);
+            els.toggleLive.classList.toggle('bg-white/10', state.live);
+            els.toggleLive.textContent = state.live ? 'Live' : 'Paused';
+          });
+
+          start();
           render();
         }
 
