@@ -222,20 +222,25 @@
 
         const state = {
           range: '7d',
-          segment: 'all',
-          visible: { engagement: true, signup: true, activation: true, churn: true },
+          live: true,
+          visible: { equity: true, drawdown: true, price: true, volume: true, oi: true, win_rate: true },
           sort: { key: 'converts', dir: 'desc' },
           data: null,
         };
 
         const els = {
+          title: document.getElementById('title'),
+          subtitle: document.getElementById('subtitle'),
+          livePill: document.getElementById('livePill'),
+          toggleLive: document.getElementById('toggleLive'),
           range: document.getElementById('range'),
-          segment: document.getElementById('segment'),
+          token: document.getElementById('token'),
           export: document.getElementById('export'),
           chart: document.getElementById('chart'),
           tip: document.getElementById('tooltip'),
           tipTitle: document.querySelector('[data-tip-title]'),
           tipBody: document.querySelector('[data-tip-body]'),
+          // cohorts is legacy (kept for now)
           cohorts: document.getElementById('cohorts'),
           topBody: document.getElementById('top-body'),
           topTable: document.getElementById('top-table'),
