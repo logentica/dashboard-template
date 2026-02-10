@@ -494,7 +494,13 @@
             r.series.drawdown.slice(-7).map((x) => Math.abs(x)),
             (v) => `${v.toFixed(2)}%`
           );
-          setKPI('win_rate', parseFloat(String(r.kpis.win_rate.value).replace('%', '')), r.kpis.win_rate.delta, r.series.win_rate.slice(-7).map((x) => x * 100), (v) => `${Math.round(v)}%`);
+          setKPI(
+            'win_rate',
+            parseFloat(String(r.kpis.win_rate.value).replace('%', '')),
+            r.kpis.win_rate.delta,
+            r.series.win_rate.slice(-7).map((x) => x * 100),
+            (v) => `${Math.round(v)}%`
+          );
           setKPI('profit_factor', r.kpis.profit_factor.value, r.kpis.profit_factor.delta, r.series.equity.slice(-7), (v) => Number(v).toFixed(2));
 
           // Chart + table
