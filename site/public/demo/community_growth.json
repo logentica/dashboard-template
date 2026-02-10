@@ -1,0 +1,54 @@
+{
+  "meta": {
+    "title": "Creator Community Growth (Demo)",
+    "timezone": "America/New_York",
+    "currency": "USD",
+    "generated": "2026-02-10"
+  },
+  "ranges": {
+    "7d": {
+      "label": "Last 7 days",
+      "dates": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+      "engagement": [120, 150, 90, 180, 210, 160, 190],
+      "signup": [18, 22, 14, 28, 34, 21, 26],
+      "activation": [10, 12, 8, 15, 18, 11, 13],
+      "churn": [9.1, 8.9, 8.6, 8.5, 8.2, 8.0, 7.8]
+    },
+    "30d": {
+      "label": "Last 30 days",
+      "dates": ["W1", "W2", "W3", "W4"],
+      "engagement": [610, 720, 680, 790],
+      "signup": [86, 94, 88, 106],
+      "activation": [51, 57, 54, 63],
+      "churn": [9.6, 9.2, 8.6, 7.8]
+    }
+  },
+  "kpis": {
+    "active_members": {"value": 3482, "delta": 6.2},
+    "weekly_retention": {"value": 41, "delta": 2.1},
+    "conversions": {"value": 128, "delta": 9.4},
+    "mrr": {"value": 7940, "delta": 4.8}
+  },
+  "cohorts": {
+    "weeks": ["W-5", "W-4", "W-3", "W-2", "W-1"],
+    "retention": [
+      [100, 62, 48, 41, 38, 35],
+      [100, 64, 50, 43, 39, 36],
+      [100, 66, 52, 44, 40, 37],
+      [100, 69, 55, 46, 41, 38],
+      [100, 71, 58, 48, 42, 39]
+    ]
+  },
+  "segments": [
+    {"key": "all", "label": "All"},
+    {"key": "free", "label": "Free"},
+    {"key": "paid", "label": "Paid"}
+  ],
+  "top_creators": [
+    {"name": "@northstar", "followers": 18200, "posts": 12, "engagement": 4.9, "converts": 18},
+    {"name": "@fieldnotes", "followers": 9600, "posts": 18, "engagement": 3.8, "converts": 12},
+    {"name": "@signals", "followers": 24100, "posts": 9, "engagement": 5.4, "converts": 24},
+    {"name": "@studio", "followers": 13200, "posts": 14, "engagement": 4.2, "converts": 16},
+    {"name": "@ops", "followers": 7100, "posts": 21, "engagement": 3.1, "converts": 9}
+  ]
+}

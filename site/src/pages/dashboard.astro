@@ -1,114 +1,6 @@
 ---
-const brand = {
-  product: "Logentica — Dashboard",
-  subtitle: "Public demo · no auth · template-ready",
-};
-
-const range = {
-  label: "Last 7 days",
-  from: "Feb 3",
-  to: "Feb 9",
-};
-
-const kpis = [
-  {
-    label: "Active members",
-    value: "3,482",
-    delta: "+6.2%",
-    deltaTone: "up",
-    spark: [12, 13, 12, 14, 15, 16, 18],
-  },
-  {
-    label: "Weekly retention",
-    value: "41%",
-    delta: "+2.1%",
-    deltaTone: "up",
-    spark: [32, 33, 34, 35, 37, 39, 41],
-  },
-  {
-    label: "Conversions",
-    value: "128",
-    delta: "+9.4%",
-    deltaTone: "up",
-    spark: [10, 12, 11, 14, 15, 16, 18],
-  },
-  {
-    label: "Churn risk",
-    value: "7.8%",
-    delta: "−1.3%",
-    deltaTone: "downGood",
-    spark: [11, 10, 10, 9, 9, 8, 8],
-  },
-];
-
-const series = [
-  { day: "Mon", v: 120 },
-  { day: "Tue", v: 150 },
-  { day: "Wed", v: 90 },
-  { day: "Thu", v: 180 },
-  { day: "Fri", v: 210 },
-  { day: "Sat", v: 160 },
-  { day: "Sun", v: 190 },
-];
-
-const breakdown = [
-  { name: "Top cohort (new) · week 1", value: "54%", delta: "+4%", tone: "up" },
-  { name: "Core users · weekly", value: "1,024", delta: "+8%", tone: "up" },
-  { name: "Paying members", value: "96", delta: "+3%", tone: "up" },
-  { name: "Support load", value: "Low", delta: "−12%", tone: "downGood" },
-];
-
-const topRows = [
-  {
-    label: "Acquisition channel",
-    rows: [
-      { k: "Referral", v: "38%", d: "+5%" },
-      { k: "X / social", v: "26%", d: "+2%" },
-      { k: "Direct", v: "21%", d: "−1%" },
-      { k: "Search", v: "15%", d: "+1%" },
-    ],
-  },
-  {
-    label: "Top workflows",
-    rows: [
-      { k: "Dashboard views", v: "12.4k", d: "+9%" },
-      { k: "Exports", v: "412", d: "+3%" },
-      { k: "Automations run", v: "1,842", d: "+11%" },
-      { k: "Alerts triggered", v: "38", d: "−6%" },
-    ],
-  },
-];
-
-function sparkPath(values: number[], w = 104, h = 28, pad = 2) {
-  const min = Math.min(...values);
-  const max = Math.max(...values);
-  const span = Math.max(1, max - min);
-  const step = (w - pad * 2) / (values.length - 1);
-  const pts = values.map((v, i) => {
-    const x = pad + i * step;
-    const y = pad + (1 - (v - min) / span) * (h - pad * 2);
-    return [x, y] as const;
-  });
-  const d = pts
-    .map(([x, y], i) => `${i === 0 ? "M" : "L"}${x.toFixed(2)} ${y.toFixed(2)}`)
-    .join(" ");
-  return { d, pts };
-}
-
-const maxV = Math.max(...series.map((s) => s.v));
-const width = 920;
-const height = 220;
-const pad = 18;
-const step = (width - pad * 2) / (series.length - 1);
-const linePoints = series
-  .map((s, i) => {
-    const x = pad + i * step;
-    const y = pad + (1 - s.v / maxV) * (height - pad * 2);
-    return `${x},${y}`;
-  })
-  .join(" ");
-
-const areaPoints = `${pad},${height - pad} ${linePoints} ${pad + (series.length - 1) * step},${height - pad}`;
+// Example: Creator/Community growth dashboard (interactive, no backend).
+// All data is static JSON and computed client-side.
 ---
 
 <html lang="en">
@@ -133,216 +25,525 @@ const areaPoints = `${pad},${height - pad} ${linePoints} ${pad + (series.length 
           <div class="flex items-center gap-3">
             <div class="h-9 w-9 rounded-xl border border-white/10 bg-white/5"></div>
             <div>
-              <div class="text-xs uppercase tracking-widest text-zinc-400">{brand.subtitle}</div>
-              <h1 class="mt-1 text-3xl font-semibold tracking-tight">{brand.product}</h1>
+              <div class="text-xs uppercase tracking-widest text-zinc-400">Public demo · no auth · template-ready</div>
+              <h1 class="mt-1 text-3xl font-semibold tracking-tight">Creator Community Growth</h1>
             </div>
           </div>
           <p class="mt-4 max-w-2xl text-sm text-zinc-300">
-            This is a no-auth dashboard template designed for rapid niche prototypes.
-            Swap the KPIs, labels, and adapter — ship a credible demo in hours.
+            This is a niche dashboard people actually want: it answers “what content drives signups?”, “who converts?”,
+            and “are we retaining paid members?” — with drilldowns you can act on.
           </p>
         </div>
 
         <div class="flex flex-wrap items-center gap-2 sm:justify-end">
           <div class="rounded-xl border border-white/10 bg-white/5 px-3 py-2">
             <div class="text-[11px] text-zinc-400">Time range</div>
-            <div class="text-sm font-medium">{range.label} <span class="text-zinc-400 font-normal">· {range.from}–{range.to}</span></div>
+            <select
+              id="range"
+              class="mt-1 w-full bg-transparent text-sm font-medium outline-none"
+              aria-label="Time range"
+            >
+              <option value="7d" selected>Last 7 days</option>
+              <option value="30d">Last 30 days</option>
+            </select>
           </div>
-          <button class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-zinc-200 hover:bg-white/10">
-            Export
+
+          <div class="rounded-xl border border-white/10 bg-white/5 px-3 py-2">
+            <div class="text-[11px] text-zinc-400">Segment</div>
+            <select id="segment" class="mt-1 w-full bg-transparent text-sm font-medium outline-none" aria-label="Segment">
+              <option value="all" selected>All</option>
+              <option value="free">Free</option>
+              <option value="paid">Paid</option>
+            </select>
+          </div>
+
+          <button
+            id="export"
+            class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-zinc-200 hover:bg-white/10"
+          >
+            Export CSV
           </button>
+
           <a href="/" class="rounded-xl border border-white/10 bg-white/5 px-3 py-2 text-sm text-zinc-200 hover:bg-white/10">Home</a>
         </div>
       </header>
 
       <!-- KPI grid -->
       <section class="mt-10 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        {kpis.map((k) => {
-          const s = sparkPath(k.spark);
-          const deltaClass =
-            k.deltaTone === "up"
-              ? "text-emerald-300"
-              : k.deltaTone === "downGood"
-                ? "text-emerald-300"
-                : "text-rose-300";
+        <div class="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-5">
+          <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+          <div class="text-xs uppercase tracking-wider text-zinc-400">Active members</div>
+          <div class="mt-2 text-2xl font-semibold tracking-tight" data-kpi="active_members">—</div>
+          <div class="mt-1 text-sm text-emerald-300" data-kpi-delta="active_members">—</div>
+          <svg class="mt-3" width="104" height="28" viewBox="0 0 104 28" data-spark="active_members"></svg>
+        </div>
 
-          return (
-            <div class="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-5">
-              <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
-              <div class="flex items-start justify-between gap-4">
-                <div>
-                  <div class="text-xs uppercase tracking-wider text-zinc-400">{k.label}</div>
-                  <div class="mt-2 text-2xl font-semibold tracking-tight">{k.value}</div>
-                  <div class={`mt-1 text-sm ${deltaClass}`}>{k.delta} <span class="text-zinc-500">vs prev</span></div>
-                </div>
+        <div class="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-5">
+          <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+          <div class="text-xs uppercase tracking-wider text-zinc-400">Weekly retention</div>
+          <div class="mt-2 text-2xl font-semibold tracking-tight" data-kpi="weekly_retention">—</div>
+          <div class="mt-1 text-sm text-emerald-300" data-kpi-delta="weekly_retention">—</div>
+          <svg class="mt-3" width="104" height="28" viewBox="0 0 104 28" data-spark="weekly_retention"></svg>
+        </div>
 
-                <div class="mt-1">
-                  <svg width="104" height="28" viewBox="0 0 104 28" class="block">
-                    <path d={s.d} fill="none" stroke="rgba(255,255,255,0.72)" stroke-width="2" stroke-linecap="round" />
-                    <circle
-                      cx={s.pts[s.pts.length - 1][0]}
-                      cy={s.pts[s.pts.length - 1][1]}
-                      r="2.6"
-                      fill="rgba(255,255,255,0.95)"
-                    />
-                  </svg>
-                  <div class="mt-1 text-[11px] text-zinc-500 text-right">trend</div>
-                </div>
-              </div>
-            </div>
-          );
-        })}
+        <div class="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-5">
+          <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+          <div class="text-xs uppercase tracking-wider text-zinc-400">Conversions</div>
+          <div class="mt-2 text-2xl font-semibold tracking-tight" data-kpi="conversions">—</div>
+          <div class="mt-1 text-sm text-emerald-300" data-kpi-delta="conversions">—</div>
+          <svg class="mt-3" width="104" height="28" viewBox="0 0 104 28" data-spark="conversions"></svg>
+        </div>
+
+        <div class="relative overflow-hidden rounded-2xl border border-white/10 bg-white/5 p-5">
+          <div class="absolute inset-x-0 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"></div>
+          <div class="text-xs uppercase tracking-wider text-zinc-400">MRR</div>
+          <div class="mt-2 text-2xl font-semibold tracking-tight" data-kpi="mrr">—</div>
+          <div class="mt-1 text-sm text-emerald-300" data-kpi-delta="mrr">—</div>
+          <svg class="mt-3" width="104" height="28" viewBox="0 0 104 28" data-spark="mrr"></svg>
+        </div>
       </section>
 
       <!-- Main chart + insights -->
       <section class="mt-6 grid gap-6 lg:grid-cols-3">
         <div class="rounded-2xl border border-white/10 bg-white/5 p-6 lg:col-span-2">
-          <div class="flex items-start justify-between gap-6">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
             <div>
-              <h2 class="text-lg font-semibold tracking-tight">Engagement signal</h2>
-              <p class="mt-1 text-sm text-zinc-400">Example time-series: replace with niche metric (revenue, retention, usage).</p>
+              <h2 class="text-lg font-semibold tracking-tight">Engagement → Signups → Activation</h2>
+              <p class="mt-1 text-sm text-zinc-400">
+                Hover to see values. Toggle series. This is the core story: content drives engagement, engagement drives signups.
+              </p>
             </div>
 
-            <div class="flex items-center gap-2">
-              <span class="rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-xs text-zinc-300">Daily</span>
-              <span class="rounded-lg border border-white/10 bg-transparent px-2 py-1 text-xs text-zinc-500">Weekly</span>
-              <span class="rounded-lg border border-white/10 bg-transparent px-2 py-1 text-xs text-zinc-500">Monthly</span>
+            <div class="flex flex-wrap items-center gap-2">
+              <button class="series-toggle rounded-lg border border-white/10 bg-white/5 px-2 py-1 text-xs text-zinc-300" data-series="engagement" aria-pressed="true">Engagement</button>
+              <button class="series-toggle rounded-lg border border-white/10 bg-transparent px-2 py-1 text-xs text-zinc-500" data-series="signup" aria-pressed="true">Signups</button>
+              <button class="series-toggle rounded-lg border border-white/10 bg-transparent px-2 py-1 text-xs text-zinc-500" data-series="activation" aria-pressed="true">Activation</button>
+              <button class="series-toggle rounded-lg border border-white/10 bg-transparent px-2 py-1 text-xs text-zinc-500" data-series="churn" aria-pressed="true">Churn risk</button>
             </div>
           </div>
 
           <div class="mt-6 overflow-x-auto">
-            <svg width={width} height={height} viewBox={`0 0 ${width} ${height}`} class="block">
-              <defs>
-                <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stop-color="rgba(255,255,255,0.22)" />
-                  <stop offset="100%" stop-color="rgba(255,255,255,0.00)" />
-                </linearGradient>
-              </defs>
-
-              {/* grid lines */}
-              {[0.25, 0.5, 0.75].map((t) => {
-                const y = pad + t * (height - pad * 2);
-                return <line x1={pad} y1={y} x2={width - pad} y2={y} stroke="rgba(255,255,255,0.08)" stroke-width="1" />;
-              })}
-
-              <polygon points={areaPoints} fill="url(#fade)" />
-
-              <polyline
-                points={linePoints}
-                fill="none"
-                stroke="rgba(255,255,255,0.88)"
-                stroke-width="2.5"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-              />
-
-              {series.map((s, i) => {
-                const x = pad + i * step;
-                const y = pad + (1 - s.v / maxV) * (height - pad * 2);
-                return (
-                  <g>
-                    <circle cx={x} cy={y} r="3.6" fill="rgba(255,255,255,0.92)" />
-                    <text x={x} y={height - 4} text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.55)">
-                      {s.day}
-                    </text>
-                  </g>
-                );
-              })}
-            </svg>
+            <div class="relative">
+              <svg id="chart" width="920" height="240" viewBox="0 0 920 240" class="block"></svg>
+              <div id="tooltip" class="pointer-events-none absolute hidden rounded-xl border border-white/10 bg-black/80 px-3 py-2 text-xs text-zinc-200 backdrop-blur">
+                <div class="font-medium" data-tip-title>—</div>
+                <div class="mt-1 grid gap-1" data-tip-body></div>
+              </div>
+            </div>
           </div>
 
           <div class="mt-6 grid gap-3 sm:grid-cols-2">
-            {breakdown.map((b) => {
-              const cls = b.tone === "up" || b.tone === "downGood" ? "text-emerald-300" : "text-rose-300";
-              return (
-                <div class="rounded-xl border border-white/10 bg-black/20 px-4 py-3">
-                  <div class="text-xs text-zinc-400">{b.name}</div>
-                  <div class="mt-1 flex items-baseline justify-between gap-4">
-                    <div class="text-base font-semibold text-zinc-100">{b.value}</div>
-                    <div class={`text-sm ${cls}`}>{b.delta}</div>
-                  </div>
-                </div>
-              );
-            })}
+            <div class="rounded-xl border border-white/10 bg-black/20 px-4 py-3">
+              <div class="text-xs text-zinc-400">What’s working</div>
+              <div class="mt-1 text-sm text-zinc-200">
+                Referral + social are accelerating. Double down on posts that trigger replies (highest signup lift).
+              </div>
+            </div>
+            <div class="rounded-xl border border-white/10 bg-black/20 px-4 py-3">
+              <div class="text-xs text-zinc-400">What to build next</div>
+              <div class="mt-1 text-sm text-zinc-200">
+                Add “lead magnet → onboarding → upsell” automation and a weekly cohort email. This reduces churn risk.
+              </div>
+            </div>
           </div>
         </div>
 
         <aside class="rounded-2xl border border-white/10 bg-white/5 p-6">
-          <h3 class="text-lg font-semibold tracking-tight">Insights</h3>
-          <p class="mt-1 text-sm text-zinc-400">This box is the “sell”: it explains what the dashboard means.</p>
+          <h3 class="text-lg font-semibold tracking-tight">Retention cohorts (WOW)</h3>
+          <p class="mt-1 text-sm text-zinc-400">A cohort heatmap instantly shows whether changes improved retention.</p>
 
-          <div class="mt-6 grid gap-3">
-            <div class="rounded-xl border border-white/10 bg-black/20 p-4">
-              <div class="text-xs uppercase tracking-wider text-zinc-500">Opportunity</div>
-              <div class="mt-2 text-sm text-zinc-200">
-                The niche is engaging daily, but conversions lag on high-intent actions.
-                Add an automation + export workflow to close the loop.
-              </div>
-            </div>
+          <div class="mt-5 overflow-hidden rounded-xl border border-white/10 bg-black/20">
+            <div class="grid" style="grid-template-columns: 84px repeat(6, 1fr)">
+              <div class="p-3 text-[11px] text-zinc-500">Cohort</div>
+              {[0, 1, 2, 3, 4, 5].map((i) => (
+                <div class="p-3 text-[11px] text-zinc-500 text-center">W{i}</div>
+              ))}
 
-            <div class="rounded-xl border border-white/10 bg-black/20 p-4">
-              <div class="text-xs uppercase tracking-wider text-zinc-500">Next build</div>
-              <ul class="mt-2 space-y-2 text-sm text-zinc-200">
-                <li class="flex gap-2"><span class="text-zinc-500">1.</span> Replace synthetic metrics with your niche KPIs</li>
-                <li class="flex gap-2"><span class="text-zinc-500">2.</span> Add a single “member workflow” feature (wedge)</li>
-                <li class="flex gap-2"><span class="text-zinc-500">3.</span> Ship a public demo link (no auth)</li>
-              </ul>
+              <div id="cohorts" class="contents"></div>
             </div>
+          </div>
 
-            <div class="rounded-xl border border-white/10 bg-black/20 p-4">
-              <div class="text-xs uppercase tracking-wider text-zinc-500">Adapter targets</div>
-              <div class="mt-2 flex flex-wrap gap-2 text-xs">
-                {["Stripe", "Discord", "Circle", "Shopify", "Airtable", "Sheets", "Postgres"].map((t) => (
-                  <span class="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-zinc-300">{t}</span>
-                ))}
-              </div>
-            </div>
+          <div class="mt-5 rounded-xl border border-white/10 bg-black/20 p-4">
+            <div class="text-xs uppercase tracking-wider text-zinc-500">Interpretation</div>
+            <p class="mt-2 text-sm text-zinc-200">
+              If later cohorts stay brighter longer, your onboarding + product wedge improved stickiness.
+              This is the kind of “niche stat” that sells.
+            </p>
           </div>
         </aside>
       </section>
 
-      <!-- Tables -->
-      <section class="mt-6 grid gap-6 lg:grid-cols-2">
-        {topRows.map((block) => (
-          <div class="rounded-2xl border border-white/10 bg-white/5 p-6">
-            <div class="flex items-center justify-between">
-              <h3 class="text-lg font-semibold tracking-tight">{block.label}</h3>
-              <span class="text-xs text-zinc-500">example breakdown</span>
-            </div>
-
-            <div class="mt-4 overflow-hidden rounded-xl border border-white/10">
-              <table class="w-full text-sm">
-                <thead class="bg-black/30">
-                  <tr>
-                    <th class="px-4 py-3 text-left font-medium text-zinc-400">Item</th>
-                    <th class="px-4 py-3 text-right font-medium text-zinc-400">Value</th>
-                    <th class="px-4 py-3 text-right font-medium text-zinc-400">Δ</th>
-                  </tr>
-                </thead>
-                <tbody class="divide-y divide-white/10">
-                  {block.rows.map((r) => (
-                    <tr class="bg-black/10">
-                      <td class="px-4 py-3 text-zinc-200">{r.k}</td>
-                      <td class="px-4 py-3 text-right font-medium text-zinc-100">{r.v}</td>
-                      <td class="px-4 py-3 text-right text-emerald-300">{r.d}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+      <!-- Table: top creators / influencers -->
+      <section class="mt-6 rounded-2xl border border-white/10 bg-white/5 p-6">
+        <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h3 class="text-lg font-semibold tracking-tight">Top influencers (conversion impact)</h3>
+            <p class="mt-1 text-sm text-zinc-400">
+              A niche would want this because it tells them who to collaborate with — not just who is loud.
+            </p>
           </div>
-        ))}
+          <div class="text-xs text-zinc-500">Click headers to sort</div>
+        </div>
+
+        <div class="mt-4 overflow-hidden rounded-xl border border-white/10">
+          <table class="w-full text-sm" id="top-table">
+            <thead class="bg-black/30">
+              <tr>
+                <th class="px-4 py-3 text-left font-medium text-zinc-400" data-sort="name">Account</th>
+                <th class="px-4 py-3 text-right font-medium text-zinc-400" data-sort="followers">Followers</th>
+                <th class="px-4 py-3 text-right font-medium text-zinc-400" data-sort="posts">Posts</th>
+                <th class="px-4 py-3 text-right font-medium text-zinc-400" data-sort="engagement">Engagement</th>
+                <th class="px-4 py-3 text-right font-medium text-zinc-400" data-sort="converts">Conversions</th>
+              </tr>
+            </thead>
+            <tbody class="divide-y divide-white/10" id="top-body"></tbody>
+          </table>
+        </div>
       </section>
 
       <footer class="mt-10 border-t border-white/10 pt-6 text-xs text-zinc-500">
         <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            Template notes: keep this page static. Use a thin adapter layer for real data.
-            Don’t add auth unless you must.
+            Template notes: keep it public/no-auth. Add a thin adapter for real data.
+            If you can explain the dashboard in 10 seconds, it converts.
           </div>
           <div class="text-zinc-600">© {new Date().getFullYear()} Logentica</div>
         </div>
       </footer>
+
+      <script is:inline>
+        const fmt = {
+          int: (n) => new Intl.NumberFormat(undefined).format(Math.round(n)),
+          pct: (n) => `${n.toFixed(1)}%`,
+          money: (n) => new Intl.NumberFormat(undefined, { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(n),
+        };
+
+        const state = {
+          range: '7d',
+          segment: 'all',
+          visible: { engagement: true, signup: true, activation: true, churn: true },
+          sort: { key: 'converts', dir: 'desc' },
+          data: null,
+        };
+
+        const els = {
+          range: document.getElementById('range'),
+          segment: document.getElementById('segment'),
+          export: document.getElementById('export'),
+          chart: document.getElementById('chart'),
+          tip: document.getElementById('tooltip'),
+          tipTitle: document.querySelector('[data-tip-title]'),
+          tipBody: document.querySelector('[data-tip-body]'),
+          cohorts: document.getElementById('cohorts'),
+          topBody: document.getElementById('top-body'),
+          topTable: document.getElementById('top-table'),
+        };
+
+        function sparkPath(values, w = 104, h = 28, pad = 2) {
+          const min = Math.min(...values);
+          const max = Math.max(...values);
+          const span = Math.max(1e-9, max - min);
+          const step = (w - pad * 2) / (values.length - 1);
+          const pts = values.map((v, i) => {
+            const x = pad + i * step;
+            const y = pad + (1 - (v - min) / span) * (h - pad * 2);
+            return [x, y];
+          });
+          const d = pts.map(([x, y], i) => `${i === 0 ? 'M' : 'L'}${x.toFixed(2)} ${y.toFixed(2)}`).join(' ');
+          return { d, pts };
+        }
+
+        function setKPI(key, value, deltaPct, sparkValues, formatter) {
+          const v = document.querySelector(`[data-kpi="${key}"]`);
+          const d = document.querySelector(`[data-kpi-delta="${key}"]`);
+          const s = document.querySelector(`[data-spark="${key}"]`);
+          if (!v || !d || !s) return;
+
+          v.textContent = formatter(value);
+          const sign = deltaPct >= 0 ? '+' : '';
+          d.textContent = `${sign}${deltaPct.toFixed(1)}% vs prev`;
+
+          const sp = sparkPath(sparkValues);
+          s.innerHTML = `
+            <path d="${sp.d}" fill="none" stroke="rgba(255,255,255,0.72)" stroke-width="2" stroke-linecap="round"></path>
+            <circle cx="${sp.pts[sp.pts.length - 1][0]}" cy="${sp.pts[sp.pts.length - 1][1]}" r="2.6" fill="rgba(255,255,255,0.95)"></circle>
+          `;
+        }
+
+        function drawCohorts(cohorts) {
+          const weeks = cohorts.weeks;
+          const mat = cohorts.retention;
+
+          const clamp = (x, a, b) => Math.max(a, Math.min(b, x));
+          const shade = (p) => {
+            const t = clamp(p / 100, 0, 1);
+            const a = 0.06 + t * 0.26;
+            return `rgba(255,255,255,${a.toFixed(3)})`;
+          };
+
+          const rows = [];
+          for (let r = 0; r < weeks.length; r++) {
+            rows.push(`<div class="p-3 text-[11px] text-zinc-400">${weeks[r]}</div>`);
+            for (let c = 0; c < mat[r].length; c++) {
+              const val = mat[r][c];
+              rows.push(`
+                <div
+                  class="p-3 text-center text-[11px] text-zinc-200"
+                  style="background:${shade(val)}"
+                  title="${weeks[r]} · W${c} = ${val}%"
+                >
+                  ${val}%
+                </div>
+              `);
+            }
+          }
+          els.cohorts.innerHTML = rows.join('');
+        }
+
+        function drawChart(rangeData) {
+          const svg = els.chart;
+          if (!svg) return;
+
+          const W = 920, H = 240, pad = 18;
+          // Series values are read directly from rangeData arrays.
+          const labels = rangeData.dates;
+          const n = labels.length;
+          const step = (W - pad * 2) / (n - 1);
+
+          const vis = state.visible;
+          const maxEng = Math.max(...rangeData.engagement);
+          const maxSignup = Math.max(...rangeData.signup);
+          const maxAct = Math.max(...rangeData.activation);
+          const maxChurn = Math.max(...rangeData.churn);
+
+          function y(v, kind) {
+            const inner = H - pad * 2;
+            if (kind === 'engagement') return pad + (1 - v / maxEng) * inner;
+            if (kind === 'signup') return pad + (1 - v / maxSignup) * inner;
+            if (kind === 'activation') return pad + (1 - v / maxAct) * inner;
+            if (kind === 'churn') return pad + (v / maxChurn) * inner; // lower is better => invert story
+            return pad + inner / 2;
+          }
+
+          const colors = {
+            engagement: 'rgba(255,255,255,0.90)',
+            signup: 'rgba(255,255,255,0.55)',
+            activation: 'rgba(255,255,255,0.72)',
+            churn: 'rgba(16,185,129,0.75)',
+          };
+
+          const grid = [0.25, 0.5, 0.75]
+            .map((t) => {
+              const yy = pad + t * (H - pad * 2);
+              return `<line x1="${pad}" y1="${yy}" x2="${W - pad}" y2="${yy}" stroke="rgba(255,255,255,0.08)" stroke-width="1" />`;
+            })
+            .join('');
+
+          function poly(kind) {
+            const data = rangeData[kind];
+            const pts = data
+              .map((v, i) => {
+                const xx = pad + i * step;
+                const yy = y(v, kind);
+                return `${xx},${yy}`;
+              })
+              .join(' ');
+            return { pts };
+          }
+
+          const lines = Object.keys(vis)
+            .filter((k) => vis[k])
+            .map((kind) => {
+              const p = poly(kind);
+              return `
+                <polyline points="${p.pts}" fill="none" stroke="${colors[kind]}" stroke-width="${kind === 'engagement' ? 2.6 : 2.0}" stroke-linecap="round" stroke-linejoin="round" />
+              `;
+            })
+            .join('');
+
+          const dots = labels
+            .map((lbl, i) => {
+              const xx = pad + i * step;
+              const dotBits = Object.keys(vis)
+                .filter((k) => vis[k])
+                .map((kind) => {
+                  const yy = y(rangeData[kind][i], kind);
+                  return `<circle cx="${xx}" cy="${yy}" r="3.0" fill="${colors[kind]}" />`;
+                })
+                .join('');
+              const text = `<text x="${xx}" y="${H - 6}" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.55)">${lbl}</text>`;
+              return `<g>${dotBits}${text}</g>`;
+            })
+            .join('');
+
+          const overlay = `<rect x="${pad}" y="${pad}" width="${W - pad * 2}" height="${H - pad * 2}" fill="transparent" id="overlay" />`;
+
+          svg.innerHTML = `
+            <defs>
+              <linearGradient id="fade" x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0%" stop-color="rgba(255,255,255,0.18)" />
+                <stop offset="100%" stop-color="rgba(255,255,255,0.00)" />
+              </linearGradient>
+            </defs>
+            ${grid}
+            ${lines}
+            ${dots}
+            ${overlay}
+          `;
+
+          const overlayEl = svg.querySelector('#overlay');
+          if (!overlayEl) return;
+
+          overlayEl.addEventListener('mousemove', (e) => {
+            const rect = svg.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const idx = Math.round((mx - pad) / step);
+            const i = Math.max(0, Math.min(n - 1, idx));
+
+            els.tip.classList.remove('hidden');
+            els.tip.style.left = `${Math.min(rect.width - 220, Math.max(12, mx + 12))}px`;
+            els.tip.style.top = `12px`;
+
+            els.tipTitle.textContent = `${rangeData.label} · ${labels[i]}`;
+
+            const rows = [];
+            const add = (label, value) => rows.push(`<div class="flex items-center justify-between gap-6"><span class="text-zinc-400">${label}</span><span class="font-medium">${value}</span></div>`);
+
+            if (vis.engagement) add('Engagement', fmt.int(rangeData.engagement[i]));
+            if (vis.signup) add('Signups', fmt.int(rangeData.signup[i]));
+            if (vis.activation) add('Activation', fmt.int(rangeData.activation[i]));
+            if (vis.churn) add('Churn risk', fmt.pct(rangeData.churn[i]));
+            els.tipBody.innerHTML = rows.join('');
+          });
+
+          overlayEl.addEventListener('mouseleave', () => {
+            els.tip.classList.add('hidden');
+          });
+        }
+
+        function renderTopTable(rows) {
+          const { key, dir } = state.sort;
+          const sorted = [...rows].sort((a, b) => {
+            const av = a[key];
+            const bv = b[key];
+            if (typeof av === 'string') return dir === 'asc' ? av.localeCompare(bv) : bv.localeCompare(av);
+            return dir === 'asc' ? av - bv : bv - av;
+          });
+
+          els.topBody.innerHTML = sorted
+            .map(
+              (r) => `
+              <tr class="bg-black/10 hover:bg-white/5">
+                <td class="px-4 py-3 text-zinc-200">${r.name}</td>
+                <td class="px-4 py-3 text-right font-medium text-zinc-100">${fmt.int(r.followers)}</td>
+                <td class="px-4 py-3 text-right text-zinc-200">${fmt.int(r.posts)}</td>
+                <td class="px-4 py-3 text-right text-zinc-200">${r.engagement.toFixed(1)}</td>
+                <td class="px-4 py-3 text-right text-emerald-300">${fmt.int(r.converts)}</td>
+              </tr>
+            `
+            )
+            .join('');
+        }
+
+        function exportCSV(data, rangeKey) {
+          const r = data.ranges[rangeKey];
+          const cols = ['label', ...r.dates];
+          const lines = [];
+          lines.push(cols.join(','));
+          const addRow = (label, arr) => lines.push([label, ...arr].join(','));
+          addRow('engagement', r.engagement);
+          addRow('signup', r.signup);
+          addRow('activation', r.activation);
+          addRow('churn', r.churn);
+
+          const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8' });
+          const url = URL.createObjectURL(blob);
+          const a = document.createElement('a');
+          a.href = url;
+          a.download = `dashboard-${rangeKey}.csv`;
+          document.body.appendChild(a);
+          a.click();
+          a.remove();
+          URL.revokeObjectURL(url);
+        }
+
+        function segmentMultiplier(seg) {
+          if (seg === 'free') return { active: 0.78, conv: 0.62, mrr: 0.28, retention: 0.86, churn: 1.10 };
+          if (seg === 'paid') return { active: 0.22, conv: 0.38, mrr: 0.72, retention: 1.18, churn: 0.72 };
+          return { active: 1, conv: 1, mrr: 1, retention: 1, churn: 1 };
+        }
+
+        function render() {
+          if (!state.data) return;
+          const data = state.data;
+          const m = segmentMultiplier(state.segment);
+
+          const base = data.kpis;
+          // Sparklines are synthetic but consistent.
+          setKPI('active_members', base.active_members.value * m.active, base.active_members.delta, [12, 13, 12, 14, 15, 16, 18], fmt.int);
+          setKPI('weekly_retention', base.weekly_retention.value * m.retention, base.weekly_retention.delta, [32, 33, 34, 35, 37, 39, 41], (v) => `${Math.round(v)}%`);
+          setKPI('conversions', base.conversions.value * m.conv, base.conversions.delta, [10, 12, 11, 14, 15, 16, 18], fmt.int);
+          setKPI('mrr', base.mrr.value * m.mrr, base.mrr.delta, [6200, 6400, 6600, 6900, 7200, 7600, 7940], fmt.money);
+
+          const rangeData = {
+            ...data.ranges[state.range],
+            label: data.ranges[state.range].label,
+            churn: data.ranges[state.range].churn.map((x) => x * m.churn),
+          };
+
+          drawChart(rangeData);
+          drawCohorts(data.cohorts);
+          renderTopTable(data.top_creators);
+        }
+
+        async function init() {
+          const res = await fetch('/demo/community_growth.json');
+          state.data = await res.json();
+
+          els.range.addEventListener('change', () => {
+            state.range = els.range.value;
+            render();
+          });
+
+          els.segment.addEventListener('change', () => {
+            state.segment = els.segment.value;
+            render();
+          });
+
+          document.querySelectorAll('.series-toggle').forEach((btn) => {
+            btn.addEventListener('click', () => {
+              const key = btn.getAttribute('data-series');
+              state.visible[key] = !state.visible[key];
+              btn.setAttribute('aria-pressed', String(state.visible[key]));
+              btn.classList.toggle('text-zinc-300', state.visible[key]);
+              btn.classList.toggle('text-zinc-500', !state.visible[key]);
+              btn.classList.toggle('bg-white/5', state.visible[key]);
+              btn.classList.toggle('bg-transparent', !state.visible[key]);
+              render();
+            });
+          });
+
+          els.topTable.querySelectorAll('th[data-sort]').forEach((th) => {
+            th.style.cursor = 'pointer';
+            th.addEventListener('click', () => {
+              const key = th.getAttribute('data-sort');
+              if (state.sort.key === key) {
+                state.sort.dir = state.sort.dir === 'asc' ? 'desc' : 'asc';
+              } else {
+                state.sort.key = key;
+                state.sort.dir = 'desc';
+              }
+              render();
+            });
+          });
+
+          els.export.addEventListener('click', () => exportCSV(state.data, state.range));
+
+          render();
+        }
+
+        init();
+      </script>
     </main>
   </body>
 </html>
