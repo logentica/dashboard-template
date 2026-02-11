@@ -267,14 +267,36 @@
           if (!v || !d || !s) return;
 
           v.textContent = formatter(value);
-          const sign = deltaPct >= 0 ? '+' : '';
-          d.textContent = `${sign}${deltaPct.toFixed(1)}% vs prev`;
 
-          const sp = sparkPath(sparkValues);
-          s.innerHTML = `
-            <path d="${sp.d}" fill="none" stroke="rgba(255,255,255,0.72)" stroke-width="2" stroke-linecap="round"></path>
-            <circle cx="${sp.pts[sp.pts.length - 1][0]}" cy="${sp.pts[sp.pts.length - 1][1]}" r="2.6" fill="rgba(255,255,255,0.95)"></circle>
-          `;
+          const rawDelta = typeof deltaPct === 'string' ? deltaPct.trim() : deltaPct;
+          const delta =
+            typeof rawDelta === 'number'
+              ? rawDelta
+              : typeof rawDelta === 'string'
+                ? Number.parseFloat(rawDelta.replace('%', ''))
+                : NaN;
+
+          if (!Number.isFinite(delta)) {
+            d.textContent = '—';
+            d.classList.remove('text-emerald-300', 'text-rose-300');
+            d.classList.add('text-zinc-400');
+          } else {
+            const sign = delta > 0 ? '+' : '';
+            d.textContent = `${sign}${delta.toFixed(1)}% vs prev`;
+            d.classList.remove('text-zinc-400');
+            d.classList.toggle('text-emerald-300', delta >= 0);
+            d.classList.toggle('text-rose-300', delta < 0);
+          }
+
+          if (Array.isArray(sparkValues) && sparkValues.length >= 2) {
+            const sp = sparkPath(sparkValues);
+            s.innerHTML = `
+              <path d="${sp.d}" fill="none" stroke="rgba(255,255,255,0.72)" stroke-width="2" stroke-linecap="round"></path>
+              <circle cx="${sp.pts[sp.pts.length - 1][0]}" cy="${sp.pts[sp.pts.length - 1][1]}" r="2.6" fill="rgba(255,255,255,0.95)"></circle>
+            `;
+          } else {
+            s.innerHTML = '';
+          }
         }
 
         function drawCohorts(cohorts) {
@@ -312,32 +334,43 @@
           if (!svg) return;
 
           const W = 920, H = 240, pad = 18;
-          // Series values are read directly from rangeData arrays.
-          const labels = rangeData.dates;
+          const labels = Array.isArray(rangeData.labels) ? rangeData.labels : [];
+          const series = rangeData && rangeData.series && typeof rangeData.series === 'object' ? rangeData.series : {};
           const n = labels.length;
+          if (n < 2) {
+            svg.innerHTML = '';
+            return;
+          }
           const step = (W - pad * 2) / (n - 1);
 
           const vis = state.visible;
-          const maxEng = Math.max(...rangeData.engagement);
-          const maxSignup = Math.max(...rangeData.signup);
-          const maxAct = Math.max(...rangeData.activation);
-          const maxChurn = Math.max(...rangeData.churn);
+          const kinds = Object.keys(vis).filter((k) => vis[k] && Array.isArray(series[k]) && series[k].length >= n);
+
+          const colors = {
+            equity: 'rgba(255,255,255,0.92)',
+            drawdown: 'rgba(148,163,184,0.75)',
+            price: 'rgba(251,191,36,0.72)',
+            volume: 'rgba(255,255,255,0.48)',
+            oi: 'rgba(56,189,248,0.70)',
+            win_rate: 'rgba(16,185,129,0.75)',
+          };
+
+          const scales = {};
+          for (const kind of kinds) {
+            const arr = series[kind].slice(0, n).map((x) => Number(x)).filter((x) => Number.isFinite(x));
+            const min = arr.length ? Math.min(...arr) : 0;
+            const max = arr.length ? Math.max(...arr) : 1;
+            scales[kind] = { min, span: Math.max(1e-9, max - min) };
+          }
 
           function y(v, kind) {
             const inner = H - pad * 2;
-            if (kind === 'engagement') return pad + (1 - v / maxEng) * inner;
-            if (kind === 'signup') return pad + (1 - v / maxSignup) * inner;
-            if (kind === 'activation') return pad + (1 - v / maxAct) * inner;
-            if (kind === 'churn') return pad + (v / maxChurn) * inner; // lower is better => invert story
-            return pad + inner / 2;
+            const sc = scales[kind];
+            if (!sc) return pad + inner / 2;
+            const vv = Number(v);
+            if (!Number.isFinite(vv)) return pad + inner / 2;
+            return pad + (1 - (vv - sc.min) / sc.span) * inner;
           }
-
-          const colors = {
-            engagement: 'rgba(255,255,255,0.90)',
-            signup: 'rgba(255,255,255,0.55)',
-            activation: 'rgba(255,255,255,0.72)',
-            churn: 'rgba(16,185,129,0.75)',
-          };
 
           const grid = [0.25, 0.5, 0.75]
             .map((t) => {
@@ -347,7 +380,7 @@
             .join('');
 
           function poly(kind) {
-            const data = rangeData[kind];
+            const data = series[kind].slice(0, n);
             const pts = data
               .map((v, i) => {
                 const xx = pad + i * step;
@@ -358,12 +391,11 @@
             return { pts };
           }
 
-          const lines = Object.keys(vis)
-            .filter((k) => vis[k])
+          const lines = kinds
             .map((kind) => {
               const p = poly(kind);
               return `
-                <polyline points="${p.pts}" fill="none" stroke="${colors[kind]}" stroke-width="${kind === 'engagement' ? 2.6 : 2.0}" stroke-linecap="round" stroke-linejoin="round" />
+                <polyline points="${p.pts}" fill="none" stroke="${colors[kind] || 'rgba(255,255,255,0.55)'}" stroke-width="${kind === 'equity' ? 2.6 : 2.0}" stroke-linecap="round" stroke-linejoin="round" />
               `;
             })
             .join('');
@@ -371,11 +403,10 @@
           const dots = labels
             .map((lbl, i) => {
               const xx = pad + i * step;
-              const dotBits = Object.keys(vis)
-                .filter((k) => vis[k])
+              const dotBits = kinds
                 .map((kind) => {
-                  const yy = y(rangeData[kind][i], kind);
-                  return `<circle cx="${xx}" cy="${yy}" r="3.0" fill="${colors[kind]}" />`;
+                  const yy = y(series[kind][i], kind);
+                  return `<circle cx="${xx}" cy="${yy}" r="3.0" fill="${colors[kind] || 'rgba(255,255,255,0.55)'}" />`;
                 })
                 .join('');
               const text = `<text x="${xx}" y="${H - 6}" text-anchor="middle" font-size="10" fill="rgba(255,255,255,0.55)">${lbl}</text>`;
@@ -416,12 +447,12 @@
             const rows = [];
             const add = (label, value) => rows.push(`<div class="flex items-center justify-between gap-6"><span class="text-zinc-400">${label}</span><span class="font-medium">${value}</span></div>`);
 
-            if (vis.equity) add('Equity', fmt.money(rangeData.series.equity[i]));
-            if (vis.drawdown) add('Drawdown', `${rangeData.series.drawdown[i].toFixed(0)} USD`);
-            if (vis.price) add('Price', `$${rangeData.series.price[i].toFixed(3)}`);
-            if (vis.volume) add('Volume', `${rangeData.series.volume[i].toFixed(1)}M`);
-            if (vis.oi) add('Open interest', `${Math.round(rangeData.series.oi[i])}`);
-            if (vis.win_rate) add('Win rate', fmt.pct(rangeData.series.win_rate[i]));
+            if (vis.equity && Number.isFinite(Number(series.equity?.[i]))) add('Equity', fmt.money(series.equity[i]));
+            if (vis.drawdown && Number.isFinite(Number(series.drawdown?.[i]))) add('Drawdown', `${Number(series.drawdown[i]).toFixed(0)} USD`);
+            if (vis.price && Number.isFinite(Number(series.price?.[i]))) add('Price', `$${Number(series.price[i]).toFixed(3)}`);
+            if (vis.volume && Number.isFinite(Number(series.volume?.[i]))) add('Volume', `${Number(series.volume[i]).toFixed(1)}M`);
+            if (vis.oi && Number.isFinite(Number(series.oi?.[i]))) add('Open interest', `${Math.round(Number(series.oi[i]))}`);
+            if (vis.win_rate && Number.isFinite(Number(series.win_rate?.[i]))) add('Win rate', fmt.pct(Number(series.win_rate[i])));
             els.tipBody.innerHTML = rows.join('');
           });
 
