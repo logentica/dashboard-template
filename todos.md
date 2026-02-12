@@ -1,8 +1,12 @@
 # dashboard-template
 
 ## Deployment + Tracking
-- [ ] Ensure `values.yaml` uses correct namespace + hostname
-- [ ] Ensure Plausible `data-domain` matches production hostname
+- [x] Ensure `values.yaml` uses correct namespace + hostname
+- [x] Ensure Plausible `data-domain` matches production hostname
+
+## Deployment Sync (Prod)
+- [ ] ArgoCD sync stuck: cluster deployment still on image `:14` while repo `values.yaml` is `:17`
+- [ ] After sync, re-validate `/dashboard` has no console errors (fix is already in repo; prod still shows `deltaPct.toFixed`)
 
 ## Branding + Content
 - [x] Replace remaining "Simple Site" / "simple-template" references in UI copy
@@ -12,8 +16,8 @@
 ## Validation
 - [x] Run `cd site && npm ci && npm run build`
 - [x] Run `cd site && npm run preview` and smoke test locally
-- [ ] Smoke test production: `https://dashboard-template.buildville.cloud`
+- [ ] Smoke test production: `https://dashboard-template.buildville.cloud` (currently shows console error on `/dashboard`)
 
 ## CI/CD Blockers
-- [ ] Fix GitHub Actions secrets for registry push (`BUILDVILLE_REGISTRY_USERNAME` / `BUILDVILLE_REGISTRY_PASSWORD`)
-- [ ] Ensure cluster has working image pull secret (`buildville-registry-credentials`) so pods can pull `registry.buildville.cloud/buildville/dashboard-template:*`
+- [x] GitHub Actions registry push secrets present (recent runs succeed)
+- [ ] Ensure cluster can pull and roll out new tags (prod currently not updating beyond `:14`)
