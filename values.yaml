@@ -7,7 +7,7 @@ services:
   mode: single
 image:
   repository: registry.buildville.cloud/buildville/dashboard-template
-  tag: '17'
+  tag: '18'
   pullPolicy: Always
 service:
   port: 80
