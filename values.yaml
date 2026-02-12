@@ -2,6 +2,10 @@ namespace: dashboard-template
 site:
   name: "dashboard-template"
   description: Public dashboard template (static Astro site)
+# Static tenant deployment
+services:
+  mode: single
+
 image:
   repository: registry.buildville.cloud/buildville/dashboard-template
   tag: '16'
@@ -27,7 +31,7 @@ ingress:
     enabled: true
   tlsSecretName: dashboard-template-tls
 healthCheck:
-  path: /health
+  path: /
   initialDelaySeconds: 5
   periodSeconds: 10
 githubRepo: https://github.com/logentica/dashboard-template.git
