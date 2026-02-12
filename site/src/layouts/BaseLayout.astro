@@ -9,6 +9,9 @@ interface Props {
 }
 
 const { title, description = 'A public dashboard template built with Astro' } = Astro.props;
+
+const buildSha = (import.meta.env as any).PUBLIC_BUILD_SHA || '';
+const buildTime = new Date().toISOString();
 ---
 
 <!doctype html>
@@ -19,6 +22,9 @@ const { title, description = 'A public dashboard template built with Astro' } = 
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="generator" content={Astro.generator} />
+
+    {buildSha ? <meta name="build-sha" content={buildSha} /> : null}
+    <meta name="build-time" content={buildTime} />
     
     <!-- Plausible Analytics (auto-instrument per-tenant hostname) -->
     <script is:inline>
